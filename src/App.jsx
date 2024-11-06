@@ -88,14 +88,14 @@ function App() {
   }
 
   return (
-    <div className='min-h-dvh'>
+    <div className='min-h-dvh max-w-screen-md m-auto'>
       <nav className="bg-slate-500 p-4 text-center font-bold text-white">
         {isLoggedIn ?<h1>{name}</h1> :  <></> }
         <h1 className="text-2xl ">On cause ?</h1>
         {isLoggedIn ?
         <form onSubmit={(e) => sendMessage(e)} className='flex flex-col'>
           <textarea className='text-black' value={writingMessage} onChange={(e) => setWritingMessage(e.target.value)} ></textarea>
-          <button type="submit">Envoyer</button>
+          <button type="submit" className='button'>Envoyer</button>
         </form> :  <></> }
       </nav>
       <main className='block min-h-full'>
@@ -103,7 +103,7 @@ function App() {
         !isLoggedIn ? 
         <form onSubmit={connect} className='flex items-center flex-col h-80 p-8'>
           <input type='text' className='border-2 rounded-md border-gray-500' value={name} onChange={(e) => setName(e.target.value)} placeholder='Votre pseudo' />
-          <button type="submit" className='bg-red-500'>Envoyer</button>
+          <button type="submit" className='button'>Envoyer</button>
         </form> : 
         <div className="flex flex-col gap-4 items-center">
           <div className='flex flex-col gap-4  overflow-scroll h-80 w-full p-4'>
@@ -117,7 +117,7 @@ function App() {
             </div>)
             }
           </div>
-          <button className="bg-red-500 p-4 rounded-md" onClick={(e) => disconnect(e) }>Exit</button>
+          <button className="button" onClick={(e) => disconnect(e) }>Exit</button>
         </div>
         }
       </main>
