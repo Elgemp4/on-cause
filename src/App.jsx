@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios';
+import Message from './Message';
 
 
 function App() {
@@ -16,16 +17,23 @@ function App() {
 
   const [writingMessage, setWritingMessage] = useState("");
 
-
   useEffect(() => {
     async function load_messages(){
       const messages = await axios.get("http://localhost/ultime-test/api/content/items/messages");
-      setMessages(messages.data);
+      setLimitedMessages(messages.data);
       const senders = await axios.get("http://localhost/ultime-test/api/content/items/senders");
       setSenders(senders.data);
     }
     load_messages();
   }, []);
+
+
+  const setLimitedMessages = (messages) => {
+    if(messages.length > 15){
+      messages = messages.splice(-15, Infinity);
+    }
+    setMessages(messages);
+  }
 
   const disconnect = (e) => {
     e.preventDefault();
@@ -55,12 +63,12 @@ function App() {
         }});
         me = createdSender.data;
       }
+
       setMe(me);
       setSenders([...senders, me]);
       setIsLoggedIn(true)
 
     }catch(e){
-      console.log(e);
       alert("Une erreur réseau est survenue");
     }
   }
@@ -82,7 +90,7 @@ function App() {
       "api-key": api_key
     }});
 
-    setMessages([...messages, sentMessage.data]);
+    setLimitedMessages([...messages, sentMessage.data]);
 
     setWritingMessage("");
   }
@@ -107,15 +115,7 @@ function App() {
         </form> : 
         <div className="flex flex-col gap-4 items-center">
           <div className='flex flex-col gap-4  overflow-scroll h-80 w-full p-4'>
-          {messages.map(
-            (mess) => 
-            <div key={mess._id} className={
-            (me._id == mess.sender._id ? "flex flex-col items-end" : "")}>
-              <h3 className='font-bold' dangerouslySetInnerHTML={{__html: senders.find((sender) => sender._id == mess.sender._id).sender}}></h3>
-              <p dangerouslySetInnerHTML={{__html: mess.message}}></p>
-              <hr className='w-full'></hr>
-            </div>)
-            }
+          {messages.map((mess) => <Message message={mess} me={me} senders={senders}/>)}
           </div>
           <button className="button" onClick={(e) => disconnect(e) }>Exit</button>
         </div>
