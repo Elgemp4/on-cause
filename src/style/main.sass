@@ -4,4 +4,37 @@
 
 
 .button
-    @apply bg-blue-400 p-4 rounded-md text-white
+    @apply bg-blue-400 px-4 py-2 text-xl rounded-md text-white
+
+    &-red
+        @apply bg-red-600
+
+.page-main
+    @apply block min-h-full
+
+.connection
+    @apply flex items-center flex-col h-80 p-8
+
+.input
+    @apply border-2 rounded-md border-gray-500 mb-8 p-2
+
+.content
+    @apply min-h-dvh max-w-screen-md m-auto bg-slate-200
+
+.message
+    @apply p-2
+
+    &-page
+        @apply flex flex-col gap-4 items-center p-2
+
+    &-container
+        @apply flex flex-col gap-4  overflow-scroll h-80 w-full p-4 bg-white
+    &-personal
+        @apply flex flex-col items-end text-red-600
+    &-input
+        @apply text-gray-900 h-20 mb-2 p-4 rounded-md
+    &-targeted
+        @apply bg-yellow-300 rounded-md
+
+.footer
+    @apply bg-slate-500 p-4 text-center text-2xl font-bold text-white

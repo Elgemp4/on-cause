@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios';
 import Message from './Message';
+import NavBar from './Nav';
 
 
 function App() {
@@ -17,25 +18,30 @@ function App() {
 
   const [writingMessage, setWritingMessage] = useState("");
 
+  const scrollbar = useRef(null);
+
   useEffect(() => {
-    async function load_messages(){
+    async function load_messages(){ //Chargement des données au login
       const messages = await axios.get("http://localhost/ultime-test/api/content/items/messages");
       setLimitedMessages(messages.data);
       const senders = await axios.get("http://localhost/ultime-test/api/content/items/senders");
       setSenders(senders.data);
     }
     load_messages();
-  }, []);
+
+    if(scrollbar.current != null)
+      scrollbar.current.scrollTop = scrollbar.current.scrollHeight
+  }, [scrollbar.current]);
 
 
-  const setLimitedMessages = (messages) => {
+  const setLimitedMessages = (messages) => { //Défini la liste de message en ne prenant que les 15 derniers
     if(messages.length > 15){
       messages = messages.splice(-15, Infinity);
     }
     setMessages(messages);
   }
 
-  const disconnect = (e) => {
+  const disconnect = (e) => { //Déconnecte l'utilisateur
     e.preventDefault();
     setMe({});
     setIsLoggedIn(false);
@@ -47,10 +53,10 @@ function App() {
     try{
       const result = await axios.get(`http://localhost/ultime-test/api/content/items/senders?filter={ \"sender\": \"${name}\"}`)
       let me;
-      if(result.data.length != 0){
+      if(result.data.length != 0){ //Si le sender existe
         me = result.data[0];
       }
-      else{
+      else{ //Si le sender n'existe pas alors le créer
         
         const createdSender = await axios.post(`http://localhost/ultime-test/api/content/item/senders`, {
           "data":
@@ -64,9 +70,9 @@ function App() {
         me = createdSender.data;
       }
 
-      setMe(me);
-      setSenders([...senders, me]);
-      setIsLoggedIn(true)
+      setMe(me); //Définir mon identité
+      setSenders([...senders, me]); //M'ajouter à la liste des senders
+      setIsLoggedIn(true) //Définir que je suis connecté
 
     }catch(e){
       alert("Une erreur réseau est survenue");
@@ -76,6 +82,7 @@ function App() {
   const sendMessage = async (e) => {
     e.preventDefault();
     
+    //Envoyer le message
     const sentMessage = await axios.post(`http://localhost/ultime-test/api/content/item/messages`, {
       "data":
       {
@@ -90,38 +97,30 @@ function App() {
       "api-key": api_key
     }});
 
+    //Prendre les 15 derniers message et vider le champs au dessus
     setLimitedMessages([...messages, sentMessage.data]);
-
     setWritingMessage("");
   }
 
   return (
-    <div className='min-h-dvh max-w-screen-md m-auto'>
-      <nav className="bg-slate-500 p-4 text-center font-bold text-white">
-        {isLoggedIn ?<h1>{name}</h1> :  <></> }
-        <h1 className="text-2xl ">On cause ?</h1>
-        {isLoggedIn ?
-        <form onSubmit={(e) => sendMessage(e)} className='flex flex-col'>
-          <textarea className='text-black' value={writingMessage} onChange={(e) => setWritingMessage(e.target.value)} ></textarea>
-          <button type="submit" className='button'>Envoyer</button>
-        </form> :  <></> }
-      </nav>
-      <main className='block min-h-full'>
+    <div className='content'>
+      <NavBar name={name} setWritingMessage={setWritingMessage} writingMessage={writingMessage} isLoggedIn={isLoggedIn} sendMessage={sendMessage} />
+      <main className='page-main'>
         {
         !isLoggedIn ? 
-        <form onSubmit={connect} className='flex items-center flex-col h-80 p-8'>
-          <input type='text' className='border-2 rounded-md border-gray-500' value={name} onChange={(e) => setName(e.target.value)} placeholder='Votre pseudo' />
+        <form onSubmit={connect} className='connection'>
+          <input required type='text' className='input' value={name} onChange={(e) => setName(e.target.value)} placeholder='Votre pseudo' />
           <button type="submit" className='button'>Envoyer</button>
         </form> : 
-        <div className="flex flex-col gap-4 items-center">
-          <div className='flex flex-col gap-4  overflow-scroll h-80 w-full p-4'>
-          {messages.map((mess) => <Message message={mess} me={me} senders={senders}/>)}
+        <div className="message-page">
+          <div className='message-container' ref={scrollbar}>
+          {messages.map((mess) => <Message key={mess._id} message={mess} me={me} senders={senders}/>)}
           </div>
-          <button className="button" onClick={(e) => disconnect(e) }>Exit</button>
+          <button className="button button-red" onClick={(e) => disconnect(e) }>Exit</button>
         </div>
         }
       </main>
-      <footer className='bg-slate-500 p-4 text-center text-2xl font-bold text-white' >@Pierre Chalier - 2022</footer>
+      <footer className='footer' >@Pierre Chalier - 2022</footer>
     </div>
   )
 }
